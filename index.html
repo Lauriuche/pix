@@ -1,129 +1,67 @@
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Terminal POS - $lauriuche</title>
-    <!-- Bibliotecas Essenciais -->
+    <title>Terminal MP - $lauriuche</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        
-        :root {
-            --bg: #050505;
-            --card: #0f0f0f;
-            --primary: #2563eb;
-            --success: #10b981;
-        }
-
+        :root { --bg: #050505; --card: #0f0f0f; --mp-blue: #009ee3; --success: #00a650; }
         body { 
-            background-color: var(--bg); 
-            color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            height: 100vh; 
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-color: var(--bg); color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; 
+            height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center;
             touch-action: manipulation;
         }
-
-        .terminal-container {
-            background: var(--card);
-            border: 1px solid #1a1a1a;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .key-btn {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.1s ease;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .key-btn:active {
-            background: var(--primary);
-            color: white;
-            transform: scale(0.92);
-            border-color: var(--primary);
-        }
-
-        #qrcode {
-            background: #fff;
-            padding: 16px;
-            border-radius: 24px;
-            display: inline-block;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
-        }
-
+        .terminal-container { background: var(--card); border: 1px solid #1a1a1a; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .key-btn { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.1s ease; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .key-btn:active { background: var(--mp-blue); color: white; transform: scale(0.92); }
+        #qrcode { background: #fff; padding: 12px; border-radius: 20px; display: inline-block; }
         #qrcode img { margin: 0 auto; }
-
-        .success-overlay {
-            position: fixed;
-            inset: 0;
-            background: var(--success);
-            z-index: 100;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            animation: slideUp 0.4s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .money-input {
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -2px;
-        }
+        .success-overlay { position: fixed; inset: 0; background: var(--success); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .money-display { font-variant-numeric: tabular-nums; letter-spacing: -2px; }
     </style>
 </head>
 <body>
 
-    <!-- Ecrã de Pagamento Confirmado -->
+    <!-- Overlay de Sucesso -->
     <div id="successScreen" class="success-overlay">
         <div class="bg-white text-emerald-600 rounded-full p-8 shadow-2xl mb-6 animate-bounce">
             <i data-lucide="check" size="80" stroke-width="4"></i>
         </div>
         <h1 class="text-5xl font-extrabold italic tracking-tighter text-white">PAGO!</h1>
-        <p class="text-emerald-100 mt-4 text-xl font-semibold opacity-80">Venda concluída</p>
+        <p class="text-emerald-100 mt-4 text-xl font-semibold opacity-80">Mercado Pago Confirmado</p>
     </div>
 
-    <!-- Interface Principal -->
+    <!-- Terminal -->
     <div id="terminal" class="terminal-container w-full h-full sm:h-auto sm:max-w-[420px] sm:rounded-[3.5rem] p-8 flex flex-col justify-between relative overflow-hidden">
         
-        <!-- Header -->
         <header class="flex justify-between items-center mb-4">
             <div class="flex items-center gap-3">
-                <div id="statusDot" class="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_#3b82f6]"></div>
-                <span class="text-[11px] font-bold tracking-[0.2em] text-zinc-500 uppercase">Sistema Pronto</span>
+                <div id="statusDot" class="w-2.5 h-2.5 bg-sky-500 rounded-full animate-pulse shadow-[0_0_10px_#009ee3]"></div>
+                <span class="text-[11px] font-bold tracking-[0.2em] text-zinc-500 uppercase">Mercado Pago Ativo</span>
             </div>
             <div class="bg-zinc-900 px-4 py-1.5 rounded-full border border-zinc-800">
-                <span class="text-[11px] font-black text-blue-400 tracking-wider">$LAURIUCHE</span>
+                <span class="text-[11px] font-black text-sky-400 tracking-wider">TERMINAL PDV</span>
             </div>
         </header>
 
-        <!-- Display de Valor -->
-        <div class="flex-grow flex flex-col justify-center items-center py-10">
-            <p id="labelInput" class="text-zinc-500 text-xs font-bold uppercase tracking-[0.3em] mb-4">Valor a Cobrar</p>
-            <div class="money-input text-7xl font-extrabold flex items-baseline gap-3">
+        <!-- Display -->
+        <div class="flex-grow flex flex-col justify-center items-center py-6">
+            <p id="labelInput" class="text-zinc-500 text-xs font-bold uppercase tracking-[0.3em] mb-2">Valor da Venda</p>
+            <div class="money-display text-7xl font-extrabold flex items-baseline gap-3">
                 <span class="text-zinc-800 text-3xl font-bold">R$</span>
                 <span id="display">0,00</span>
             </div>
         </div>
 
-        <!-- Área Dinâmica (Teclado ou QR Code) -->
-        <div id="dynamicArea" class="min-h-[380px] flex flex-col justify-center">
+        <!-- Área de Ação -->
+        <div id="dynamicArea" class="min-h-[400px] flex flex-col justify-center">
             
-            <!-- Estado 1: Teclado -->
+            <!-- Teclado -->
             <div id="view_keypad" class="grid grid-cols-3 gap-4">
                 <button type="button" onclick="typeNum('1')" class="key-btn h-20 rounded-3xl text-3xl font-bold">1</button>
                 <button type="button" onclick="typeNum('2')" class="key-btn h-20 rounded-3xl text-3xl font-bold">2</button>
@@ -138,165 +76,183 @@
                     <i data-lucide="delete"></i>
                 </button>
                 <button type="button" onclick="typeNum('0')" class="key-btn h-20 rounded-3xl text-3xl font-bold">0</button>
-                <button type="button" onclick="processEnter()" class="key-btn h-20 rounded-3xl bg-blue-600 border-none flex items-center justify-center text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] !active:bg-blue-700">
+                <button type="button" onclick="createPayment()" class="key-btn h-20 rounded-3xl bg-sky-600 border-none flex items-center justify-center text-white shadow-[0_0_20px_rgba(0,158,227,0.3)]">
                     <i data-lucide="arrow-right" stroke-width="3"></i>
                 </button>
             </div>
 
-            <!-- Estado 2: QR Code -->
-            <div id="view_qr" class="hidden text-center animate-in fade-in slide-in-from-bottom-8 duration-500">
-                <div id="qrcode" class="mb-8"></div>
-                <div class="bg-blue-600/10 border border-blue-500/20 py-3 px-6 rounded-2xl inline-flex items-center gap-3 mb-8">
-                    <div class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
-                    <span class="text-blue-400 text-xs font-black uppercase tracking-[0.2em]">Aguardando Pix...</span>
+            <!-- QR Code -->
+            <div id="view_qr" class="hidden text-center animate-in fade-in zoom-in duration-500">
+                <div id="qrcode" class="mb-6"></div>
+                <div class="bg-sky-500/10 border border-sky-500/20 py-3 px-6 rounded-2xl inline-flex items-center gap-3 mb-6">
+                    <div class="w-2 h-2 bg-sky-500 rounded-full animate-ping"></div>
+                    <span id="paymentStatus" class="text-sky-400 text-[10px] font-black uppercase tracking-[0.2em]">Aguardando Pagamento</span>
                 </div>
                 <br>
                 <button type="button" onclick="resetTerminal()" class="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em] hover:text-rose-500 transition-colors">
-                    Cancelar Transação [ESC]
+                    Cancelar [ESC]
                 </button>
             </div>
-        </div>
 
-        <footer class="mt-8 text-center">
-            <p class="text-[9px] text-zinc-700 uppercase font-black tracking-[0.4em]">InfinitePay External Checkout</p>
-        </footer>
+            <!-- Loading -->
+            <div id="view_loading" class="hidden text-center py-10">
+                <div class="animate-spin inline-block w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full"></div>
+                <p class="text-sky-500 font-bold mt-4 uppercase text-xs tracking-widest">Criando Pix...</p>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Inicialização de Ícones
         lucide.createIcons();
 
-        // --- CONFIGURAÇÃO ---
-        const HANDLE = "lauriuche";
-        const SUPABASE_URL = "https://SEU-PROJETO.supabase.co";
-        const SUPABASE_KEY = "SUA-ANON-KEY";
-        
-        let db = null;
-        try {
-            if (typeof supabase !== 'undefined') {
-                db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            }
-        } catch (e) { console.error("Supabase não carregado"); }
+        // CREDENCIAIS MERCADO PAGO
+        const MP_ACCESS_TOKEN = "APP_USR-2084179504074922-042411-9d6918d42c7263e1baf8ad0c3f44052e-1631579027";
         
         let rawValue = ""; 
         let isProcessing = false;
+        let paymentId = null;
+        let pollingInterval = null;
 
-        // --- LÓGICA DE DIGITAÇÃO ---
         function typeNum(num) {
             if (isProcessing) return;
-
-            if (num === 'backspace') {
-                rawValue = rawValue.slice(0, -1);
-            } else {
-                if (rawValue.length < 10) rawValue += num;
-            }
-            
-            vibrate(15);
+            if (num === 'backspace') { rawValue = rawValue.slice(0, -1); }
+            else { if (rawValue.length < 10) rawValue += num; }
+            vibrate(10);
             updateDisplay();
         }
 
         function updateDisplay() {
             const display = document.getElementById('display');
-            if (rawValue === "" || rawValue === "0") {
+            if (!rawValue || rawValue === "0") {
                 display.innerText = "0,00";
                 display.classList.add('text-zinc-800');
             } else {
-                const numericValue = parseInt(rawValue) / 100;
-                display.innerText = numericValue.toLocaleString('pt-PT', { 
-                    minimumFractionDigits: 2, 
-                    maximumFractionDigits: 2 
-                });
+                const val = (parseInt(rawValue) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                display.innerText = val;
                 display.classList.remove('text-zinc-800');
             }
         }
 
-        // --- LÓGICA DE EXECUÇÃO ---
-        function processEnter() {
-            if (rawValue === "" || parseInt(rawValue) === 0 || isProcessing) return;
+        async function createPayment() {
+            if (!rawValue || parseInt(rawValue) === 0 || isProcessing) return;
             
+            showView('loading');
             isProcessing = true;
-            vibrate([20, 50, 20]);
+
+            const amount = parseFloat(parseInt(rawValue) / 100);
             
-            const valorFormatado = (parseInt(rawValue) / 100).toFixed(2);
-            const checkoutUrl = `https://pay.infinitepay.io/${HANDLE}/${valorFormatado}`;
+            const payload = {
+                transaction_amount: amount,
+                description: "Venda PDV Terminal",
+                payment_method_id: "pix",
+                payer: { email: "pagamento@lauriuche.com" }
+            };
 
-            // Troca de UI
-            document.getElementById('view_keypad').classList.add('hidden');
-            document.getElementById('view_qr').classList.remove('hidden');
-            document.getElementById('labelInput').innerText = "Escaneie o QR Code";
+            try {
+                const response = await fetchWithRetry("https://api.mercadopago.com/v1/payments", {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${MP_ACCESS_TOKEN}`,
+                        'Content-Type': 'application/json',
+                        'X-Idempotency-Key': Date.now().toString()
+                    },
+                    body: JSON.stringify(payload)
+                });
 
-            // Gerar QR Code
+                const data = await response.json();
+                
+                if (data.status === 'pending' || data.status === 'in_process') {
+                    paymentId = data.id;
+                    const pixCode = data.point_of_interaction.transaction_data.qr_code;
+                    renderQR(pixCode);
+                    startPolling(paymentId);
+                } else {
+                    throw new Error(data.message || "Erro ao criar Pix");
+                }
+            } catch (err) {
+                alert("Erro: " + err.message);
+                resetTerminal();
+            }
+        }
+
+        function renderQR(text) {
             const qrBox = document.getElementById("qrcode");
             qrBox.innerHTML = "";
             new QRCode(qrBox, {
-                text: checkoutUrl,
+                text: text,
                 width: 240,
                 height: 240,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
-
-            startRealtimeListener();
-            
-            // SIMULAÇÃO PARA TESTE (Aparecerá "PAGO" após 8 segundos se não houver Supabase)
-            setTimeout(() => {
-                if (isProcessing) showSuccess();
-            }, 8000); 
+            showView('qr');
+            document.getElementById('labelInput').innerText = "Escaneie o Pix";
         }
 
-        function startRealtimeListener() {
-            if (!db) return;
-            db.channel('vendas_confirm')
-              .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vendas' }, (payload) => {
-                  if (payload.new.status === 'pago' && payload.new.handle === HANDLE) {
-                      showSuccess();
-                  }
-              }).subscribe();
+        function startPolling(id) {
+            pollingInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`https://api.mercadopago.com/v1/payments/${id}`, {
+                        headers: { 'Authorization': `Bearer ${MP_ACCESS_TOKEN}` }
+                    });
+                    const data = await res.json();
+                    
+                    if (data.status === 'approved') {
+                        clearInterval(pollingInterval);
+                        showSuccess();
+                    }
+                } catch (e) { console.error("Erro no polling", e); }
+            }, 3000);
+        }
+
+        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
+            try {
+                const res = await fetch(url, options);
+                if (!res.ok && retries > 0) throw new Error();
+                return res;
+            } catch (err) {
+                if (retries === 0) throw err;
+                await new Promise(r => setTimeout(r, backoff));
+                return fetchWithRetry(url, options, retries - 1, backoff * 2);
+            }
+        }
+
+        function showView(view) {
+            ['keypad', 'qr', 'loading'].forEach(v => document.getElementById(`view_${v}`).classList.add('hidden'));
+            document.getElementById(`view_${view}`).classList.remove('hidden');
         }
 
         function showSuccess() {
-            if (!isProcessing) return;
-            isProcessing = false;
-            
             document.getElementById('successScreen').style.display = 'flex';
             playBeep();
             vibrate([100, 50, 100]);
-
-            setTimeout(() => {
-                resetTerminal();
-            }, 5000);
+            setTimeout(() => resetTerminal(), 5000);
         }
 
         function resetTerminal() {
+            if (pollingInterval) clearInterval(pollingInterval);
             location.reload();
         }
 
-        // --- UTILITÁRIOS ---
-        function vibrate(ms) {
-            if (navigator.vibrate) navigator.vibrate(ms);
-        }
+        function vibrate(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
 
         function playBeep() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.5);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.5);
             } catch(e) {}
         }
 
-        // Eventos de Teclado Físico
         window.addEventListener('keydown', (e) => {
             if (e.key >= '0' && e.key <= '9') typeNum(e.key);
             if (e.key === 'Backspace') typeNum('backspace');
-            if (e.key === 'Enter') processEnter();
+            if (e.key === 'Enter') createPayment();
             if (e.key === 'Escape') resetTerminal();
         });
     </script>
