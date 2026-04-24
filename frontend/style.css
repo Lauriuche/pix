@@ -1,0 +1,76 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* BODY */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* CONTAINER */
+.container {
+    background: #111;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 30px rgba(0,255,136,0.2);
+    text-align: center;
+    width: 280px;
+}
+
+/* TITULO */
+h1 {
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+/* INPUT */
+input {
+    width: 100%;
+    padding: 15px;
+    font-size: 28px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* BOTÃO */
+button {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    background: #00ff88;
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #00cc6a;
+}
+
+/* STATUS */
+#status {
+    margin-top: 15px;
+    font-size: 16px;
+}
+
+/* QR CODE */
+canvas {
+    margin-top: 15px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 10px;
+}
