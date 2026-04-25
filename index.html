@@ -55,6 +55,7 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* Texto clicável na tela Wi-Fi */
         .back-text {
             transition: all 0.2s ease;
         }
@@ -68,7 +69,7 @@
 
 <div class="w-full max-w-[420px] h-full bg-[#000000] flex flex-col overflow-hidden">
 
-    <!-- HEADER -->
+    <!-- HEADER MODERNO -->
     <div class="flex items-center justify-between p-6 bg-[#000000]">
         <div class="flex items-center gap-3">
             <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -97,18 +98,21 @@
         
         <p class="text-zinc-500 text-xs mt-6">Digite o valor e aperte ENTER</p>
 
-        <!-- TECLADO VIRTUAL -->
+        <!-- TECLADO VIRTUAL MODERNO -->
         <div id="virtual_keypad" class="hidden mt-8 w-full max-w-[320px]">
             <div class="grid grid-cols-3 gap-4">
                 <button onclick="addDigit('7')" class="virtual-btn">7</button>
                 <button onclick="addDigit('8')" class="virtual-btn">8</button>
                 <button onclick="addDigit('9')" class="virtual-btn">9</button>
+                
                 <button onclick="addDigit('4')" class="virtual-btn">4</button>
                 <button onclick="addDigit('5')" class="virtual-btn">5</button>
                 <button onclick="addDigit('6')" class="virtual-btn">6</button>
+                
                 <button onclick="addDigit('1')" class="virtual-btn">1</button>
                 <button onclick="addDigit('2')" class="virtual-btn">2</button>
                 <button onclick="addDigit('3')" class="virtual-btn">3</button>
+                
                 <button onclick="addDigit('0')" class="virtual-btn zero col-span-2">0</button>
                 <button onclick="backspaceVirtual()" class="virtual-btn flex items-center justify-center text-4xl">⌫</button>
             </div>
@@ -163,11 +167,12 @@
         </div>
     </div>
 
-    <!-- TELA DE PAGAMENTO PIX -->
+    <!-- TELA DE PAGAMENTO PIX (QR Code maior e centralizado) -->
     <div id="view_payment" class="hidden flex-1 flex flex-col bg-[#000000] p-6">
         <div class="flex-1 flex flex-col items-center justify-center">
             <p class="text-zinc-400 text-sm font-medium tracking-[2px] mb-8">ESCANEIE PARA PAGAR</p>
             
+            <!-- QR Code maior e com mais espaço -->
             <div class="bg-white p-6 rounded-3xl modern-card w-[300px]">
                 <div id="qr_container" class="w-full aspect-square flex items-center justify-center"></div>
             </div>
@@ -201,14 +206,16 @@
         </div>
     </div>
 
-    <!-- TELA WI-FI -->
+    <!-- TELA WI-FI (QR Code maior + texto clicável) -->
     <div id="view_wifi" class="hidden flex-1 flex flex-col bg-[#000000] p-6">
         <div class="flex-1 flex flex-col items-center justify-center">
             <p class="text-6xl font-extrabold tracking-widest mb-10 text-white">WI-FI</p>
             
+            <!-- QR Code maior e centralizado -->
             <div class="relative bg-white p-6 rounded-3xl modern-card w-[300px]">
                 <div id="qrcode_wifi" class="w-full aspect-square flex items-center justify-center"></div>
                 
+                <!-- Ícone Wi-Fi centralizado -->
                 <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-3xl p-4 shadow-2xl">
                     <i data-lucide="wifi" size="52" class="text-black"></i>
                 </div>
@@ -223,6 +230,7 @@
             </div>
         </div>
         
+        <!-- TEXTO CLICÁVEL (funciona com toque ou clique) -->
         <div onclick="resetToMain()" class="back-text text-center text-zinc-400 text-sm mt-auto pb-6 cursor-pointer select-none active:text-emerald-400">
             Aperte enter ou toque aqui para voltar
         </div>
@@ -404,8 +412,12 @@
         }
         if (document.getElementById('view_main').classList.contains('hidden')) return;
 
-        if (e.key === 'Enter') generatePIX();
-        else if (e.key === 'Escape') resetToMain();
+        if (e.key === 'Enter') {
+            generatePIX();
+        }
+        else if (e.key === 'Escape') {
+            resetToMain();
+        }
         else if (e.key === 'Backspace') {
             digits = digits.slice(0, -1);
             updateDisplay();
@@ -416,7 +428,7 @@
         }
     });
 
-    // ==================== GERAÇÃO DE PIX (DATA CORRIGIDA) ====================
+    // ==================== GERAÇÃO DE PIX + 0,01 ====================
     function generatePIX() {
         const amount = parseInt(digits) / 100;
 
@@ -436,7 +448,7 @@
         }
 
         if (!CONFIG.mpToken || CONFIG.mpToken.length < 20) {
-            alert("⚠️ Token do Mercado Pago não configurado!\n\nVá em Configurações e cole o token correto.");
+            alert("⚠️ Token do Mercado Pago não configurado!");
             openSettings();
             return;
         }
@@ -458,9 +470,7 @@
 
         const expireDate = new Date();
         expireDate.setMinutes(expireDate.getMinutes() + CONFIG.expireMinutes);
-        
-        // FORMATO CORRETO EXIGIDO PELO MERCADO PAGO (com milissegundos + offset)
-        const dateOfExpiration = expireDate.toISOString().replace('Z', '-03:00');
+        const dateOfExpiration = expireDate.toISOString().slice(0, 19) + "-03:00";
 
         fetch('https://api.mercadopago.com/v1/payments', {
             method: 'POST',
@@ -476,14 +486,12 @@
                 payer: { email: 'contato@pdvterminal.com' }
             })
         })
-        .then(res => res.json().then(body => ({res, body})))
-        .then(({res, body}) => {
-            if (!res.ok || body.error) {
-                throw new Error(body.message || body.error || `Erro HTTP ${res.status}`);
-            }
-            currentPaymentId = body.id;
-            const txData = body.point_of_interaction?.transaction_data;
-            if (!txData?.qr_code) throw new Error("QR Code não recebido do Mercado Pago");
+        .then(res => res.ok ? res.json() : Promise.reject(`Erro HTTP ${res.status}`))
+        .then(data => {
+            if (data.error) throw new Error(data.message || JSON.stringify(data.error));
+            currentPaymentId = data.id;
+            const txData = data.point_of_interaction?.transaction_data;
+            if (!txData?.qr_code) throw new Error("QR Code não recebido");
 
             currentPixString = txData.qr_code;
 
@@ -500,9 +508,8 @@
             startPaymentPolling();
         })
         .catch(err => {
-            console.error("Erro completo:", err);
-            const errorMsg = err.message || err || "Erro desconhecido ao gerar PIX";
-            alert("❌ Erro ao gerar PIX:\n" + errorMsg);
+            console.error(err);
+            alert("❌ Erro ao gerar PIX:\n" + err.message);
             resetToMain();
         });
     }
@@ -585,7 +592,7 @@
     lucide.createIcons();
     updateDisplay();
     renderVirtualKeypad();
-    console.log('%c✅ Terminal PDV • Formato date_of_expiration CORRIGIDO!', 'color:#00ff88; font-weight:bold; font-size:13px');
+    console.log('%c✅ Terminal PDV • QR Code maior + Texto clicável na tela Wi-Fi', 'color:#00ff88; font-weight:bold; font-size:13px');
 </script>
 </body>
 </html>
