@@ -7,134 +7,592 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Firebase Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { 
-            background-color: #0a0a0a; 
+            background-color: #000000; 
             color: #fff; 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             height: 100vh; 
             overflow: hidden; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
-
-        .terminal {
-            background: #111111;
-            border: 1px solid #222;
-            box-shadow: 0 0 80px rgba(0, 255, 100, 0.15);
-            max-width: 420px;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
+        
+        .value-box { 
+            background: #111111; 
+            border-radius: 32px; 
         }
-
-        .value-box {
-            background: #1a1a1a;
+        
+        .modern-card {
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+        }
+        
+        .virtual-btn {
+            background: #1f1f1f;
+            color: #fff;
+            font-size: 2.25rem;
+            font-weight: 700;
+            padding: 1.25rem;
             border-radius: 28px;
-            box-shadow: 
-                0 0 40px rgba(0, 255, 100, 0.25),
-                inset 0 4px 20px rgba(255,255,255,0.03);
-            transition: all 0.3s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+        }
+        .virtual-btn:active {
+            transform: scale(0.92);
+            background: #27272a;
+        }
+        .virtual-btn.zero {
+            font-size: 2.5rem;
+        }
+        
+        .btn-modern {
+            border-radius: 9999px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .value-box:hover {
-            box-shadow: 
-                0 0 60px rgba(0, 255, 100, 0.4);
+        /* Texto clicável na tela Wi-Fi */
+        .back-text {
+            transition: all 0.2s ease;
+        }
+        .back-text:active {
+            transform: scale(0.95);
+            opacity: 0.7;
         }
     </style>
 </head>
-<body>
+<body class="flex items-center justify-center p-0">
 
-<div class="terminal p-8 flex flex-col h-full">
+<div class="w-full max-w-[420px] h-full bg-[#000000] flex flex-col overflow-hidden">
 
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-12">
+    <!-- HEADER MODERNO -->
+    <div class="flex items-center justify-between p-6 bg-[#000000]">
         <div class="flex items-center gap-3">
             <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-            <span class="text-sm font-semibold tracking-widest text-emerald-400">Terminal Online</span>
+            <span class="text-sm font-semibold tracking-widest text-emerald-400">TERMINAL ONLINE</span>
         </div>
-        <div class="text-[10px] font-black tracking-widest text-zinc-500">MERCADO PAGO</div>
+        
+        <div onclick="openWifiScreen()" class="flex items-center gap-2 cursor-pointer active:scale-95 transition">
+            <i data-lucide="wifi" size="20" class="text-emerald-400"></i>
+            <span class="text-sm font-semibold tracking-widest text-emerald-400">MERCADO PAGO</span>
+        </div>
+        
+        <button onclick="openSettings()" class="p-3 text-zinc-400 hover:text-white transition-colors">
+            <i data-lucide="settings" size="26"></i>
+        </button>
     </div>
 
-    <!-- Valor a Pagar -->
-    <div class="flex-1 flex flex-col items-center justify-center">
-        <p class="text-zinc-400 text-sm font-medium tracking-widest mb-6">valor a pagar</p>
+    <!-- Tela Inicial -->
+    <div id="view_main" class="flex-1 flex flex-col items-center justify-center bg-[#000000]">
+        <p class="text-zinc-400 text-sm font-medium tracking-widest mb-6">VALOR A PAGAR</p>
         
-        <div id="valueBox" class="value-box px-12 py-10 w-full max-w-[320px]">
+        <div class="value-box px-12 py-10 w-full max-w-[320px] modern-card">
             <div class="text-center">
-                <span class="text-7xl font-extrabold text-white tracking-tighter" id="displayValue">0,00</span>
+                <span id="displayValue" class="text-7xl font-extrabold text-white tracking-tighter">0,00</span>
+            </div>
+        </div>
+        
+        <p class="text-zinc-500 text-xs mt-6">Digite o valor e aperte ENTER</p>
+
+        <!-- TECLADO VIRTUAL MODERNO -->
+        <div id="virtual_keypad" class="hidden mt-8 w-full max-w-[320px]">
+            <div class="grid grid-cols-3 gap-4">
+                <button onclick="addDigit('7')" class="virtual-btn">7</button>
+                <button onclick="addDigit('8')" class="virtual-btn">8</button>
+                <button onclick="addDigit('9')" class="virtual-btn">9</button>
+                
+                <button onclick="addDigit('4')" class="virtual-btn">4</button>
+                <button onclick="addDigit('5')" class="virtual-btn">5</button>
+                <button onclick="addDigit('6')" class="virtual-btn">6</button>
+                
+                <button onclick="addDigit('1')" class="virtual-btn">1</button>
+                <button onclick="addDigit('2')" class="virtual-btn">2</button>
+                <button onclick="addDigit('3')" class="virtual-btn">3</button>
+                
+                <button onclick="addDigit('0')" class="virtual-btn zero col-span-2">0</button>
+                <button onclick="backspaceVirtual()" class="virtual-btn flex items-center justify-center text-4xl">⌫</button>
+            </div>
+
+            <div class="mt-8 grid grid-cols-2 gap-4">
+                <button onclick="clearDigits()" class="btn-modern py-5 bg-zinc-900 text-white text-lg font-semibold">LIMPAR</button>
+                <button onclick="confirmVirtual()" class="btn-modern py-5 bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-semibold">CONFIRMAR</button>
             </div>
         </div>
     </div>
 
-    <!-- Teclado e resto (mantido igual à versão anterior) -->
-    <div id="interactionArea" class="mt-auto">
-        <!-- Teclado Numérico -->
-        <div id="view_keypad" class="grid grid-cols-3 gap-4">
-            <button onclick="handleInput('1')" class="keypad-btn h-20 rounded-3xl text-4xl font-bold bg-zinc-900 hover:bg-zinc-800">1</button>
-            <button onclick="handleInput('2')" class="keypad-btn h-20 rounded-3xl text-4xl font-bold bg-zinc-900 hover:bg-zinc-800">2</button>
-            <button onclick="handleInput('3')" class="keypad-btn h-20 rounded-3xl text-4xl font-bold bg-zinc-900 hover:bg-zinc-800">3</button>
-            <button onclick="handleInput('4')" class="keypad-btn h-20 rounded-3xl text-4xl font-bold bg-zinc-900 hover:bg-zinc-800">4</button>
-            <button onclick="handleInput('5')" class="keypad-btn h-20 rounded-3xl text-4xl font-bold bg-zinc-900 hover:bg-zinc-800">5</button>
-            <button onclick="handleInput('6')" class="keypad-btn h-20 rounded-3xl text-4xl font-bold bg-zinc-900 hover:bg-zinc-800">6</button>
-            <button onclick="handleInput('7')" class="keypad-btn h-20 rounded-3xl text-4xl font-bold bg-zinc-900 hover:bg-zinc-800">7</button>
-            <button onclick="handleInput('8')" class="keypad-btn h-20 rounded-3xl text-4xl font-bold bg-zinc-900 hover:bg-zinc-800">8</button>
-            <button onclick="handleInput('9')" class="keypad-btn h-20 rounded-3xl text-4xl font-bold bg-zinc-900 hover:bg-zinc-800">9</button>
-            <button onclick="handleInput('backspace')" class="keypad-btn h-20 rounded-3xl flex items-center justify-center text-zinc-400 bg-zinc-900 hover:bg-zinc-800">
-                <i data-lucide="delete" size="28"></i>
-            </button>
-            <button onclick="handleInput('0')" class="keypad-btn h-20 rounded-3xl text-4xl font-bold bg-zinc-900 hover:bg-zinc-800">0</button>
-            <button onclick="startPayment()" class="keypad-btn h-20 rounded-3xl bg-[#009ee3] text-white flex items-center justify-center shadow-lg">
-                <i data-lucide="arrow-right" size="32" stroke-width="3"></i>
-            </button>
+    <!-- Tela de Configurações -->
+    <div id="view_settings" class="hidden flex-1 flex-col p-6 overflow-auto bg-[#000000]">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+            <i data-lucide="settings"></i> Configurações
+        </h2>
+
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm text-zinc-400 mb-2">Token Mercado Pago</label>
+                <input id="input_token" type="text" class="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-4 py-3 text-sm font-mono">
+            </div>
+            <div>
+                <label class="block text-sm text-zinc-400 mb-2">Expiração PIX (minutos)</label>
+                <input id="input_expire" type="number" value="5" class="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-4 py-3">
+            </div>
+            <div>
+                <label class="block text-sm text-zinc-400 mb-2">Wi-Fi SSID</label>
+                <input id="input_wifi_ssid" type="text" class="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-4 py-3">
+            </div>
+            <div>
+                <label class="block text-sm text-zinc-400 mb-2">Wi-Fi Senha</label>
+                <input id="input_wifi_pass" type="text" class="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-4 py-3">
+            </div>
+            <div>
+                <label class="block text-sm text-zinc-400 mb-2">Número WhatsApp (com DDD)</label>
+                <input id="input_whatsapp" type="text" placeholder="5511999999999" class="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-4 py-3 font-mono">
+            </div>
+
+            <div class="pt-4 border-t border-zinc-700">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input id="input_virtual_keyboard" type="checkbox" class="w-6 h-6 accent-emerald-600 rounded-2xl">
+                    <span class="text-sm text-zinc-400 select-none">Ativar modo teclado virtual</span>
+                </label>
+                <p class="text-xs text-zinc-500 mt-1 ml-9">Mostra teclado numérico na tela (ideal para tablets)</p>
+            </div>
         </div>
 
-        <!-- As outras telas (checkout, loading, expired, success) continuam iguais à versão anterior -->
-        <!-- ... (mantive compacto para não ficar gigante) -->
+        <div class="mt-auto pt-10 flex gap-3">
+            <button onclick="saveToFirebase()" class="flex-1 btn-modern bg-emerald-600 py-4 font-semibold">Salvar no Firebase</button>
+            <button onclick="closeSettings()" class="flex-1 btn-modern bg-zinc-700 py-4 font-semibold">Cancelar</button>
+        </div>
     </div>
 
-    <footer class="text-center text-[10px] text-zinc-600 mt-8">
-        terminal PDV • Mercado Pago
-    </footer>
+    <!-- TELA DE PAGAMENTO PIX (QR Code maior e centralizado) -->
+    <div id="view_payment" class="hidden flex-1 flex flex-col bg-[#000000] p-6">
+        <div class="flex-1 flex flex-col items-center justify-center">
+            <p class="text-zinc-400 text-sm font-medium tracking-[2px] mb-8">ESCANEIE PARA PAGAR</p>
+            
+            <!-- QR Code maior e com mais espaço -->
+            <div class="bg-white p-6 rounded-3xl modern-card w-[300px]">
+                <div id="qr_container" class="w-full aspect-square flex items-center justify-center"></div>
+            </div>
+            
+            <div class="mt-10 flex items-baseline gap-1">
+                <span class="text-zinc-400 text-2xl font-medium">R$</span>
+                <span id="payAmount" class="text-7xl font-extrabold tracking-tighter text-white">0,00</span>
+            </div>
+            
+            <div class="mt-8 relative flex items-center justify-center">
+                <svg id="timer_svg" width="128" height="128" class="-rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#27272a" stroke-width="9"/>
+                    <circle id="timer_progress" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="9" stroke-dasharray="282.74" stroke-dashoffset="0" stroke-linecap="round"/>
+                </svg>
+                <div class="absolute text-center">
+                    <div id="timer" class="font-mono text-4xl font-semibold text-white">1:30</div>
+                </div>
+            </div>
+            
+            <p class="mt-6 flex items-center gap-2 text-zinc-400 text-sm font-medium">
+                <span class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
+                Aguardando pagamento...
+            </p>
+        </div>
+        
+        <div class="mt-auto pb-8 space-y-6">
+            <button onclick="copyPixCode()" class="w-full btn-modern flex items-center justify-center gap-3 py-5 bg-zinc-900 text-white text-base font-semibold"> 
+                <i data-lucide="copy" size="22"></i> Copiar código PIX
+            </button>
+            <button onclick="cancelPayment()" class="w-full text-zinc-400 hover:text-white text-sm font-medium py-2">Cancelar pedido</button>
+        </div>
+    </div>
+
+    <!-- TELA WI-FI (QR Code maior + texto clicável) -->
+    <div id="view_wifi" class="hidden flex-1 flex flex-col bg-[#000000] p-6">
+        <div class="flex-1 flex flex-col items-center justify-center">
+            <p class="text-6xl font-extrabold tracking-widest mb-10 text-white">WI-FI</p>
+            
+            <!-- QR Code maior e centralizado -->
+            <div class="relative bg-white p-6 rounded-3xl modern-card w-[300px]">
+                <div id="qrcode_wifi" class="w-full aspect-square flex items-center justify-center"></div>
+                
+                <!-- Ícone Wi-Fi centralizado -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-3xl p-4 shadow-2xl">
+                    <i data-lucide="wifi" size="52" class="text-black"></i>
+                </div>
+            </div>
+            
+            <div class="mt-10 text-center">
+                <div class="flex justify-center mb-4">
+                    <i data-lucide="wifi" size="36" class="text-white"></i>
+                </div>
+                <p class="text-3xl font-medium">Rede: <span id="wifi_ssid_display" class="text-yellow-400 font-semibold"></span></p>
+                <p class="text-3xl font-medium mt-1">senha: <span id="wifi_pass_display" class="text-yellow-400 font-semibold"></span></p>
+            </div>
+        </div>
+        
+        <!-- TEXTO CLICÁVEL (funciona com toque ou clique) -->
+        <div onclick="resetToMain()" class="back-text text-center text-zinc-400 text-sm mt-auto pb-6 cursor-pointer select-none active:text-emerald-400">
+            Aperte enter ou toque aqui para voltar
+        </div>
+        
+        <div class="text-center text-[10px] text-zinc-500 pb-4">
+            TERMINAL PDV • MERCADO PAGO • V2.0
+        </div>
+    </div>
+
 </div>
 
 <script>
-    // === CONFIGURAÇÃO ===
-    const SETTINGS = {
-        TOKEN: ""APP_USR-3421363134879525-042411-0d95be3565ec7e5bfe44e731c51a1420-68553968",   // ← Coloque seu token aqui
-        EXPIRE_MS: 2 * 60 * 1000
+    // ==================== FIREBASE ====================
+    firebase.initializeApp({
+        apiKey: "AIzaSyD3E7c_4jbnLJCGCapM5L8rta6AXVHvZgs",
+        authDomain: "indisponivel-rrehfe.firebaseapp.com",
+        databaseURL: "https://indisponivel-rrehfe.firebaseio.com",
+        projectId: "indisponivel-rrehfe",
+        storageBucket: "indisponivel-rrehfe.firebasestorage.app",
+        messagingSenderId: "880210924564",
+        appId: "1:880210924564:web:fd565cdb0e4f04cd7ac301"
+    });
+
+    const db = firebase.database();
+    const configRef = db.ref('pdvConfig');
+
+    let CONFIG = {
+        mpToken: "",
+        expireMinutes: 5,
+        wifiSSID: "SeuWiFi",
+        wifiPass: "12345678",
+        whatsappNumber: "5511999999999",
+        virtualKeyboard: false
     };
 
+    configRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            CONFIG = { ...CONFIG, ...data };
+            console.log("✅ Configurações carregadas", CONFIG);
+            renderVirtualKeypad();
+        }
+    });
+
+    // ==================== VARIÁVEIS GLOBAIS ====================
+    let currentPaymentId = null;
+    let timerInterval = null;
+    let pollingInterval = null;
+    let currentPixString = "";
     let digits = "";
 
-    lucide.createIcons();
+    // ==================== FUNÇÕES GERAIS ====================
+    function hideAllScreens() {
+        document.getElementById('view_main').classList.add('hidden');
+        document.getElementById('view_settings').classList.add('hidden');
+        document.getElementById('view_payment').classList.add('hidden');
+        document.getElementById('view_wifi').classList.add('hidden');
+    }
 
-    function handleInput(key) {
-        if (key === 'backspace') {
-            digits = digits.slice(0, -1);
-        } else if (digits.length < 8) {
-            digits += key;
-        }
+    function openSettings() {
+        hideAllScreens();
+        document.getElementById('view_settings').classList.remove('hidden');
+
+        document.getElementById('input_token').value = CONFIG.mpToken || "";
+        document.getElementById('input_expire').value = CONFIG.expireMinutes || 5;
+        document.getElementById('input_wifi_ssid').value = CONFIG.wifiSSID || "";
+        document.getElementById('input_wifi_pass').value = CONFIG.wifiPass || "";
+        document.getElementById('input_whatsapp').value = CONFIG.whatsappNumber || "";
+        document.getElementById('input_virtual_keyboard').checked = !!CONFIG.virtualKeyboard;
+    }
+
+    function saveToFirebase() {
+        const newConfig = {
+            mpToken: document.getElementById('input_token').value.trim(),
+            expireMinutes: parseInt(document.getElementById('input_expire').value) || 5,
+            wifiSSID: document.getElementById('input_wifi_ssid').value.trim(),
+            wifiPass: document.getElementById('input_wifi_pass').value.trim(),
+            whatsappNumber: document.getElementById('input_whatsapp').value.trim(),
+            virtualKeyboard: document.getElementById('input_virtual_keyboard').checked
+        };
+
+        configRef.set(newConfig)
+            .then(() => showToast("✅ Salvo com sucesso no Firebase!"))
+            .catch(err => alert("Erro ao salvar:\n" + err.message));
+    }
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#10b981; color:white; padding:14px 24px; border-radius:9999px; font-weight:500; z-index:9999;';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+    }
+
+    function closeSettings() {
+        document.getElementById('view_settings').classList.add('hidden');
+        document.getElementById('view_main').classList.remove('hidden');
+    }
+
+    function resetToMain() {
+        if (timerInterval) clearInterval(timerInterval);
+        if (pollingInterval) clearInterval(pollingInterval);
+        currentPaymentId = null;
+        currentPixString = "";
+
+        hideAllScreens();
+        document.getElementById('view_main').classList.remove('hidden');
+        digits = "";
         updateDisplay();
     }
 
-    function updateDisplay() {
-        const el = document.getElementById('displayValue');
-        if (!digits) {
-            el.textContent = "0,00";
-        } else {
-            const valor = (parseInt(digits) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            el.textContent = valor;
+    // ==================== TELA WI-FI ====================
+    function openWifiScreen() {
+        if (!CONFIG.wifiSSID || !CONFIG.wifiPass) {
+            alert("⚠️ Configure o Wi-Fi nas Configurações primeiro!");
+            openSettings();
+            return;
+        }
+
+        hideAllScreens();
+        const wifiView = document.getElementById('view_wifi');
+        wifiView.classList.remove('hidden');
+
+        document.getElementById('wifi_ssid_display').textContent = CONFIG.wifiSSID;
+        document.getElementById('wifi_pass_display').textContent = CONFIG.wifiPass;
+
+        const wifiString = `WIFI:S:${encodeURIComponent(CONFIG.wifiSSID)};T:WPA;P:${encodeURIComponent(CONFIG.wifiPass)};;`;
+        
+        const qrDiv = document.getElementById('qrcode_wifi');
+        qrDiv.innerHTML = "";
+        new QRCode(qrDiv, {
+            text: wifiString,
+            width: 280,
+            height: 280,
+            colorDark: "#111111",
+            colorLight: "#ffffff"
+        });
+
+        lucide.createIcons();
+    }
+
+    // ==================== TECLADO VIRTUAL ====================
+    function renderVirtualKeypad() {
+        const keypad = document.getElementById('virtual_keypad');
+        CONFIG.virtualKeyboard ? keypad.classList.remove('hidden') : keypad.classList.add('hidden');
+    }
+
+    function addDigit(d) {
+        if (digits.length < 8) {
+            digits += d;
+            updateDisplay();
         }
     }
 
-    // Função startPayment(), renderQRCode, etc. permanecem iguais à versão anterior com círculo de progresso
+    function backspaceVirtual() {
+        digits = digits.slice(0, -1);
+        updateDisplay();
+    }
 
-    console.log('%cTerminal PDV com visual da foto carregado!', 'color:#00ff88; font-weight:bold');
+    function clearDigits() {
+        digits = "";
+        updateDisplay();
+    }
+
+    function confirmVirtual() {
+        generatePIX();
+    }
+
+    // ==================== PDV - ENTRADA DE VALOR ====================
+    function updateDisplay() {
+        document.getElementById('displayValue').textContent = 
+            digits ? (parseInt(digits) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : "0,00";
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (!document.getElementById('view_wifi').classList.contains('hidden')) {
+            if (e.key === 'Enter') resetToMain();
+            return;
+        }
+        if (document.getElementById('view_main').classList.contains('hidden')) return;
+
+        if (e.key === 'Enter') {
+            generatePIX();
+        }
+        else if (e.key === 'Escape') {
+            resetToMain();
+        }
+        else if (e.key === 'Backspace') {
+            digits = digits.slice(0, -1);
+            updateDisplay();
+        }
+        else if (e.key >= '0' && e.key <= '9' && digits.length < 8) {
+            digits += e.key;
+            updateDisplay();
+        }
+    });
+
+    // ==================== GERAÇÃO DE PIX + 0,01 ====================
+    function generatePIX() {
+        const amount = parseInt(digits) / 100;
+
+        if (amount === 0.01) {
+            showToast("📡 Abrindo QR Code Wi-Fi...");
+            setTimeout(() => {
+                openWifiScreen();
+                digits = "";
+                updateDisplay();
+            }, 300);
+            return;
+        }
+
+        if (amount < 0.01) {
+            alert("Digite um valor válido!");
+            return;
+        }
+
+        if (!CONFIG.mpToken || CONFIG.mpToken.length < 20) {
+            alert("⚠️ Token do Mercado Pago não configurado!");
+            openSettings();
+            return;
+        }
+
+        hideAllScreens();
+        const paymentView = document.getElementById('view_payment');
+        paymentView.classList.remove('hidden');
+
+        document.getElementById('payAmount').textContent = 
+            amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+        const qrContainer = document.getElementById('qr_container');
+        qrContainer.innerHTML = `
+            <div class="w-full h-full bg-zinc-100 rounded-3xl flex flex-col items-center justify-center text-zinc-400 animate-pulse">
+                <i data-lucide="loader" class="w-10 h-10 mb-3 animate-spin"></i>
+                <p class="text-sm">Gerando PIX...</p>
+            </div>
+        `;
+
+        const expireDate = new Date();
+        expireDate.setMinutes(expireDate.getMinutes() + CONFIG.expireMinutes);
+        const dateOfExpiration = expireDate.toISOString().slice(0, 19) + "-03:00";
+
+        fetch('https://api.mercadopago.com/v1/payments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CONFIG.mpToken}`
+            },
+            body: JSON.stringify({
+                transaction_amount: amount,
+                description: `PDV Terminal • ${new Date().toLocaleDateString('pt-BR')}`,
+                payment_method_id: 'pix',
+                date_of_expiration: dateOfExpiration,
+                payer: { email: 'contato@pdvterminal.com' }
+            })
+        })
+        .then(res => res.ok ? res.json() : Promise.reject(`Erro HTTP ${res.status}`))
+        .then(data => {
+            if (data.error) throw new Error(data.message || JSON.stringify(data.error));
+            currentPaymentId = data.id;
+            const txData = data.point_of_interaction?.transaction_data;
+            if (!txData?.qr_code) throw new Error("QR Code não recebido");
+
+            currentPixString = txData.qr_code;
+
+            qrContainer.innerHTML = `<div id="qrcode_inner" class="mx-auto"></div>`;
+            new QRCode(document.getElementById("qrcode_inner"), {
+                text: currentPixString,
+                width: 280,
+                height: 280,
+                colorDark: "#111111",
+                colorLight: "#ffffff"
+            });
+
+            startTimer(dateOfExpiration);
+            startPaymentPolling();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ Erro ao gerar PIX:\n" + err.message);
+            resetToMain();
+        });
+    }
+
+    function startTimer(dateOfExpiration) {
+        if (timerInterval) clearInterval(timerInterval);
+        const expirationMs = new Date(dateOfExpiration).getTime();
+        const totalSeconds = CONFIG.expireMinutes * 60;
+        const circumference = 282.74;
+        const progressCircle = document.getElementById('timer_progress');
+        const timerText = document.getElementById('timer');
+
+        timerInterval = setInterval(() => {
+            const remainingMs = expirationMs - Date.now();
+            if (remainingMs <= 0) {
+                clearInterval(timerInterval);
+                timerText.textContent = "0:00";
+                progressCircle.setAttribute('stroke-dashoffset', circumference);
+                setTimeout(cancelPayment, 2500);
+                return;
+            }
+            const remainingSec = Math.floor(remainingMs / 1000);
+            const offset = circumference * (1 - remainingSec / totalSeconds);
+            progressCircle.setAttribute('stroke-dashoffset', offset);
+            const min = Math.floor(remainingSec / 60);
+            const sec = remainingSec % 60;
+            timerText.textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    function startPaymentPolling() {
+        if (pollingInterval) clearInterval(pollingInterval);
+        pollingInterval = setInterval(() => {
+            if (!currentPaymentId) return;
+            fetch(`https://api.mercadopago.com/v1/payments/${currentPaymentId}`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${CONFIG.mpToken}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'approved') {
+                    clearInterval(pollingInterval);
+                    if (timerInterval) clearInterval(timerInterval);
+                    showPaymentSuccess();
+                }
+            })
+            .catch(() => {});
+        }, 4000);
+    }
+
+    function showPaymentSuccess() {
+        const qrContainer = document.getElementById('qr_container');
+        qrContainer.innerHTML = `
+            <div class="text-center py-12">
+                <i data-lucide="check-circle" class="w-24 h-24 text-emerald-400 mx-auto"></i>
+                <p class="text-4xl font-bold mt-6 text-emerald-400">Pagamento confirmado!</p>
+                <p class="text-zinc-400 mt-3">O PIX foi recebido com sucesso.</p>
+                <div class="mt-8 text-sm text-zinc-500">Voltando em 3 segundos...</div>
+            </div>
+        `;
+        lucide.createIcons();
+        setTimeout(() => resetToMain(), 3200);
+    }
+
+    function copyPixCode() {
+        if (currentPixString) {
+            navigator.clipboard.writeText(currentPixString).then(() => showToast("✅ Código PIX copiado!")).catch(() => alert("Copie manualmente da caixa acima."));
+        }
+    }
+
+    function cancelPayment() {
+        if (pollingInterval) clearInterval(pollingInterval);
+        if (timerInterval) clearInterval(timerInterval);
+        currentPaymentId = null;
+        currentPixString = "";
+        resetToMain();
+    }
+
+    // ==================== INICIALIZAÇÃO ====================
+    lucide.createIcons();
+    updateDisplay();
+    renderVirtualKeypad();
+    console.log('%c✅ Terminal PDV • QR Code maior + Texto clicável na tela Wi-Fi', 'color:#00ff88; font-weight:bold; font-size:13px');
 </script>
 </body>
 </html>
