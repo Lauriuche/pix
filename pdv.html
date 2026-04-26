@@ -615,7 +615,7 @@
 
         const qrBox = document.getElementById('pix-qr-box');
         qrBox.innerHTML = "";
-        new QRCode(qrBox, { text: qrString, width: 350, height: 350, colorDark: "#000000" });
+        new QRCode(qrBox, { text: qrString, width: 450, height: 450, colorDark: "#000000" });
     }
 
     function handleAutomaticPayment(amount) {
@@ -679,7 +679,7 @@
         const qrBox = document.getElementById('wifi-qr-box');
         qrBox.innerHTML = "";
         const wifiString = `WIFI:T:WPA;S:${terminalConfig.wifiSSID};P:${terminalConfig.wifiPass};;`;
-        new QRCode(qrBox, { text: wifiString, width: 350, height: 350, colorDark: "#000000" });
+        new QRCode(qrBox, { text: wifiString, width: 450, height: 450, colorDark: "#000000" });
     }
 
     function showSupport() {
@@ -687,7 +687,7 @@
         const qrBox = document.getElementById('whatsapp-qr');
         qrBox.innerHTML = "";
         const url = `https://wa.me/${terminalConfig.whatsapp}`;
-        new QRCode(qrBox, { text: url, width: 350, height: 350, colorDark: "#000000" });
+        new QRCode(qrBox, { text: url, width: 450, height: 450, colorDark: "#000000" });
     }
 
     function showSalesHistory() {
