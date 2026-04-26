@@ -427,8 +427,8 @@
                     renderSales();
                 }, (error) => console.error("Erro Vendas DB:", error));
                 
-                document.getElementById('status-dot').className = "w-1 h-1 bg-white rounded-full";
-                document.getElementById('terminal-name-label').classList.replace('text-zinc-500', 'text-white');
+                document.getElementById('status-dot').className = "w-1 h-1 bg-emerald-500 rounded-full"; // verde
+                document.getElementById('terminal-name-label').classList.replace('text-zinc-500', 'text-emerald-500'); // texto verde
             }
         });
     };
