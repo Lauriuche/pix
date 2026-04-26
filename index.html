@@ -61,8 +61,8 @@
                 height: 85vh;
                 max-height: 700px;
                 border-radius: 40px;
-                border: 2px solid #1f1f1f;
-                box-shadow: 0 0 100px rgba(255, 255, 255, 0.5);
+                border: 0px solid #1f1f1f;
+                box-shadow: 0 0 100px rgba(255, 255, 255, 0.0);
             }
         }
 
@@ -148,13 +148,13 @@
 
     <!-- Status Bar Invisível -->
     <div class="px-8 pt-8 flex justify-between items-center z-10">
-        <div class="flex items-center gap-2 opacity-50">
+        <div class="flex items-center gap-2 opacity-00">
             <div id="status-dot" class="w-1 h-1 bg-zinc-500 rounded-full transition-colors duration-500"></div>
-            <span id="terminal-name-label" class="text-[9px] font-bold tracking-[0.2em] uppercase">OFFLINE</span>
+            <span id="terminal-name-label" class="text-[15px] font-bold tracking-[0.2em] uppercase">OFFLINE</span>
         </div>
         <!-- Relógio / Botão Secreto Opcional -->
-        <button onclick="toggleSettings()" class="text-[10px] font-medium text-zinc-500 hover:text-white tracking-widest opacity-50 transition-opacity">
-            <span id="clock">00:00</span>
+        <button onclick="toggleSettings()" class="text-[20px] font-medium text-white-500 hover:text-white tracking-widest opacity-00 transition-opacity">
+            <span id="clock">00:00:00</span>
         </button>
     </div>
 
@@ -859,7 +859,10 @@
 
     setInterval(() => {
         const now = new Date();
-        document.getElementById('clock').textContent = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        document.getElementById('clock').textContent = 
+    now.getHours().toString().padStart(2, '0') + ":" + 
+    now.getMinutes().toString().padStart(2, '0') + ":" + 
+    now.getSeconds().toString().padStart(2, '0');
     }, 1000);
 
     window.addEventListener('load', () => {
